@@ -15,25 +15,14 @@ function chart(canvas, data) {
   canvas.height = DPI_HEIGHT;
 
   const [yMin, yMax] = computeBoundaries(data);
-  //console.log("yMin: " + yMin, ", yMax: " + yMax);
   const yRatio = VIEW_HEIGHT / (yMax - yMin);
-  //console.log("yRatio: " + yRatio);
   const xRatio = VIEW_WIDTH / (data.columns[0].length - 2);
 
   const yData = data.columns.filter((col) => data.types[col[0]] === "line");
-  console.log("yData", yData);
   const xData = data.columns.filter((col) => data.types[col[0]] === "x")[0];
-  console.log("xData", xData);
 
   yAxis(ctx, yMin, yMax);
   xAxis(ctx, xData, xRatio);
-
-  // yData.forEach((col) => {
-  //   const name = col[0];
-  //   const coords = col.map(toCoords(xRatio, yRatio)).filter((_, i) => i !== 0);
-  //   const color = data.colors[name];
-  //   line(ctx, coords, { color: color });
-  // });
 
   yData.map(toCoords(xRatio, yRatio)).forEach((coords, i) => {
     const color = data.colors[yData[i][0]];
@@ -78,13 +67,11 @@ function xAxis(ctx, data, xRatio) {
   const colCount = 8;
   const step = Math.round(data.length / colCount);
 
-  console.log(step);
-
   ctx.beginPath();
   for (let i = 1; i < data.length; i += step) {
-    const text = new Date(data[i]).toDateString();
+    const text = toDate(data[i]);
     const x = i * xRatio;
-    ctx.fillText(text.toString(), x, DPI_HEIGHT - 10);
+    ctx.fillText(text, x, DPI_HEIGHT - 10);
   }
   ctx.stroke();
   ctx.closePath();
