@@ -15,16 +15,42 @@ function chart(canvas, data) {
   canvas.height = DPI_HEIGHT;
 
   const [yMin, yMax] = computeBoundaries(data);
-  console.log("yMin: " + yMin, ", yMax: " + yMax);
+  //console.log("yMin: " + yMin, ", yMax: " + yMax);
   const yRation = VIEW_HEIGHT / (yMax - yMin);
-  console.log("yRation: " + yRation);
+  //console.log("yRation: " + yRation);
   const xRatio = VIEW_WIDTH / (data.columns[0].length - 2);
 
-  // === y axis
+  yAxis(ctx, yMin, yMax);
+
+  const yData = data.columns.filter((col) => data.types[col[0]] === "line");
+  console.log(yData);
+
+  yData.forEach((col) => {
+    const name = col[0];
+    //console.log(name);
+
+    const coords = col.map(toCoords(xRatio, yRation)).filter((_, i) => i !== 0);
+    //console.log(coords);
+
+    const color = data.colors[name];
+    line(ctx, coords, { color: color });
+  });
+}
+
+function toCoords(xRatio, yRation) {
+  return (y, i) => [
+    Math.floor((i - 1) * xRatio),
+    Math.floor(DPI_HEIGHT - PADDING - y * yRation),
+  ];
+}
+
+chart(document.getElementById("chart"), getChartData());
+
+function yAxis(ctx, yMin, yMax) {
   const step = VIEW_HEIGHT / ROWS_COUNT;
-  console.log("step: " + step);
+  //console.log("step: " + step);
   const stepText = (yMax - yMin) / ROWS_COUNT;
-  console.log("stepText: " + stepText);
+  //console.log("stepText: " + stepText);
 
   ctx.beginPath();
   ctx.strokeStyle = "#bbbbbb";
@@ -39,32 +65,7 @@ function chart(canvas, data) {
   }
   ctx.stroke();
   ctx.closePath();
-  // ===
-
-  data.columns.forEach((col) => {
-    const name = col[0];
-
-    if (data.types[name] === "line") {
-      console.log(name);
-
-      const coords = col
-        .map((y, i) => {
-          return [
-            Math.floor((i - 1) * xRatio),
-            Math.floor(DPI_HEIGHT - PADDING - y * yRation),
-          ];
-        })
-        .filter((_, i) => i !== 0);
-
-      console.log(coords);
-
-      const color = data.colors[name];
-      line(ctx, coords, { color: color });
-    }
-  });
 }
-
-chart(document.getElementById("chart"), getChartData());
 
 function line(ctx, coords, { color }) {
   ctx.beginPath();
