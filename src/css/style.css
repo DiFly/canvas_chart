@@ -1,0 +1,39 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+body > header,
+body > footer {
+  flex: 0 0 auto;
+
+  background-color: aliceblue;
+  padding: 8px;
+  box-shadow: 0 0 2px 2px #cfcfcf, 0 0 2px 2px #ffffff inset;
+}
+
+body > main {
+  flex: 1 0 auto;
+  padding: 16px 8px;
+}
+
+.canvas_container {
+  padding: 8px;
+  width: 100%;
+  background-color: antiquewhite;
+}
+
+.canvas_body {
+  margin: 0 auto 0 auto;
+  max-width: 100%;
+  width: 100%;
+  background-color: #ffffff;
+  border: 1px solid black;
+}

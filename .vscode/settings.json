@@ -1,0 +1,12 @@
+{
+    "liveServer.settings.root": "/src",
+    "liveServer.settings.port": 5500,
+    "liveServer.settings.CustomBrowser": "chrome:PrivateMode",
+    "liveServer.settings.ignoreFiles": [
+        ".vscode/**",
+        "**/*.scss",
+        "**/*.sass",
+        "**/*.ts"
+    ],
+    "liveServer.settings.wait": 500
+}
