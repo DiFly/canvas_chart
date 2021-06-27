@@ -90,6 +90,35 @@ function xAxis(ctx, data, xRatio) {
   ctx.closePath();
 }
 
+function toDate(timestamp, withDay) {
+  const shortMonths = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const shortDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  const date = new Date(timestamp);
+
+  if (withDay) {
+    return `${shortDays[date.getDay()]}, ${
+      shortMonths[date.getMonth()]
+    } ${date.getDate()}`;
+  }
+
+  return `${shortMonths[date.getMonth()]} ${date.getDate()}`;
+}
+
 function line(ctx, coords, { color }) {
   ctx.beginPath();
   ctx.lineWidth = 4;
