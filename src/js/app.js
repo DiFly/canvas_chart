@@ -7,6 +7,8 @@ const VIEW_HEIGHT = DPI_HEIGHT - PADDING * 2;
 const ROWS_COUNT = 5;
 
 function chart(canvas, data) {
+  console.log(data);
+
   const ctx = canvas.getContext("2d");
   canvas.width = DPI_WIDTH;
   canvas.height = DPI_HEIGHT;
@@ -47,36 +49,25 @@ function chart(canvas, data) {
   ctx.closePath();
 }
 
-chart(document.getElementById("chart"), [
-  [0, 0],
-  [100, 50],
-  [200, 150],
-  [300, 50],
-  [500, 500],
-  [600, 200],
-  [700, 200],
-  [800, 250],
-  [900, 350],
-  [1000, 400],
-  [1100, 600],
-  [1200, 700],
-  [1300, 500],
-  [1400, 100],
-  [1500, 300],
-  [1600, 300],
-]);
+chart(document.getElementById("chart"), getChartData());
 
-function computeBoundaries(data) {
+function computeBoundaries({ columns, types }) {
   let min;
   let max;
 
-  for (const [x, y] of data) {
-    if (typeof min !== "number") min = y;
-    if (typeof max !== "number") max = y;
+  columns.forEach((col) => {
+    if (types[col[0]] !== "line") return;
 
-    if (min > y) min = y;
-    if (max < y) max = y;
-  }
+    if (typeof min !== "number") min = col[1];
+    if (typeof max !== "number") max = col[1];
+
+    for (let i = 1; i < col.length; i++) {
+      const cur = col[i];
+
+      if (min > cur) min = cur;
+      if (max < cur) max = cur;
+    }
+  });
 
   return [min, max];
 }
