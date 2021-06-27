@@ -3,6 +3,7 @@ const HEIGHT = 300;
 const PADDING = 40;
 const DPI_WIDTH = WIDTH * 2;
 const DPI_HEIGHT = HEIGHT * 2;
+const VIEW_WIDTH = DPI_WIDTH;
 const VIEW_HEIGHT = DPI_HEIGHT - PADDING * 2;
 const ROWS_COUNT = 5;
 
@@ -17,6 +18,7 @@ function chart(canvas, data) {
   console.log("yMin: " + yMin, ", yMax: " + yMax);
   const yRation = VIEW_HEIGHT / (yMax - yMin);
   console.log("yRation: " + yRation);
+  const xRatio = VIEW_WIDTH / (data.columns[0].length - 2);
 
   // === y axis
   const step = VIEW_HEIGHT / ROWS_COUNT;
@@ -30,7 +32,7 @@ function chart(canvas, data) {
   ctx.fillStyle = "#96a2aa";
   for (let i = 1; i <= ROWS_COUNT; i++) {
     const y = step * i;
-    const text = yMax - stepText * i;
+    const text = Math.round(yMax - stepText * i);
     ctx.fillText(text.toString(), 5, y + PADDING - 10);
     ctx.moveTo(0, y + PADDING);
     ctx.lineTo(DPI_WIDTH, y + PADDING);
@@ -39,17 +41,41 @@ function chart(canvas, data) {
   ctx.closePath();
   // ===
 
+  data.columns.forEach((col) => {
+    const name = col[0];
+
+    if (data.types[name] === "line") {
+      console.log(name);
+
+      const coords = col
+        .map((y, i) => {
+          return [
+            Math.floor((i - 1) * xRatio),
+            Math.floor(DPI_HEIGHT - PADDING - y * yRation),
+          ];
+        })
+        .filter((_, i) => i !== 0);
+
+      console.log(coords);
+
+      const color = data.colors[name];
+      line(ctx, coords, { color: color });
+    }
+  });
+}
+
+chart(document.getElementById("chart"), getChartData());
+
+function line(ctx, coords, { color }) {
   ctx.beginPath();
   ctx.lineWidth = 4;
-  ctx.strokeStyle = "#ff0000";
-  for (const [x, y] of data) {
-    ctx.lineTo(x, DPI_HEIGHT - PADDING - y * yRation);
+  ctx.strokeStyle = color;
+  for (const [x, y] of coords) {
+    ctx.lineTo(x, y);
   }
   ctx.stroke();
   ctx.closePath();
 }
-
-chart(document.getElementById("chart"), getChartData());
 
 function computeBoundaries({ columns, types }) {
   let min;
