@@ -16,8 +16,8 @@ function chart(canvas, data) {
 
   const [yMin, yMax] = computeBoundaries(data);
   //console.log("yMin: " + yMin, ", yMax: " + yMax);
-  const yRation = VIEW_HEIGHT / (yMax - yMin);
-  //console.log("yRation: " + yRation);
+  const yRatio = VIEW_HEIGHT / (yMax - yMin);
+  //console.log("yRatio: " + yRatio);
   const xRatio = VIEW_WIDTH / (data.columns[0].length - 2);
 
   yAxis(ctx, yMin, yMax);
@@ -25,23 +25,27 @@ function chart(canvas, data) {
   const yData = data.columns.filter((col) => data.types[col[0]] === "line");
   console.log(yData);
 
-  yData.forEach((col) => {
-    const name = col[0];
-    //console.log(name);
+  // yData.forEach((col) => {
+  //   const name = col[0];
+  //   const coords = col.map(toCoords(xRatio, yRatio)).filter((_, i) => i !== 0);
+  //   const color = data.colors[name];
+  //   line(ctx, coords, { color: color });
+  // });
 
-    const coords = col.map(toCoords(xRatio, yRation)).filter((_, i) => i !== 0);
-    //console.log(coords);
-
-    const color = data.colors[name];
+  yData.map(toCoords(xRatio, yRatio)).forEach((coords, i) => {
+    const color = data.colors[yData[i][0]];
     line(ctx, coords, { color: color });
   });
 }
 
-function toCoords(xRatio, yRation) {
-  return (y, i) => [
-    Math.floor((i - 1) * xRatio),
-    Math.floor(DPI_HEIGHT - PADDING - y * yRation),
-  ];
+function toCoords(xRatio, yRatio) {
+  return (col) =>
+    col
+      .map((y, i) => [
+        Math.floor((i - 1) * xRatio),
+        Math.floor(DPI_HEIGHT - PADDING - y * yRatio),
+      ])
+      .filter((_, i) => i !== 0);
 }
 
 chart(document.getElementById("chart"), getChartData());
