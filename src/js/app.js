@@ -7,27 +7,71 @@ const VIEW_WIDTH = DPI_WIDTH;
 const VIEW_HEIGHT = DPI_HEIGHT - PADDING * 2;
 const ROWS_COUNT = 5;
 
+const tgChart = chart(document.getElementById("chart"), getChartData());
+tgChart.init();
+// tgChart.destroy();
+
 function chart(canvas, data) {
   console.log("data", data);
-
+  let raf;
   const ctx = canvas.getContext("2d");
   canvas.width = DPI_WIDTH;
   canvas.height = DPI_HEIGHT;
 
-  const [yMin, yMax] = computeBoundaries(data);
-  const yRatio = VIEW_HEIGHT / (yMax - yMin);
-  const xRatio = VIEW_WIDTH / (data.columns[0].length - 2);
+  const proxy = new Proxy(
+    {},
+    {
+      set(...args) {
+        const result = Reflect.set(...args);
+        console.log("change");
 
-  const yData = data.columns.filter((col) => data.types[col[0]] === "line");
-  const xData = data.columns.filter((col) => data.types[col[0]] === "x")[0];
+        raf = requestAnimationFrame(paint);
+        return result;
+      },
+    }
+  );
 
-  yAxis(ctx, yMin, yMax);
-  xAxis(ctx, xData, xRatio);
+  function mousemove({ clientX, clientY }) {
+    proxy.mouse = {
+      x: clientX,
+      y: clientY,
+    };
+  }
 
-  yData.map(toCoords(xRatio, yRatio)).forEach((coords, i) => {
-    const color = data.colors[yData[i][0]];
-    line(ctx, coords, { color: color });
-  });
+  canvas.addEventListener("mousemove", mousemove);
+
+  function paint() {
+    clear();
+
+    const [yMin, yMax] = computeBoundaries(data);
+    const yRatio = VIEW_HEIGHT / (yMax - yMin);
+    const xRatio = VIEW_WIDTH / (data.columns[0].length - 2);
+
+    const yData = data.columns.filter((col) => data.types[col[0]] === "line");
+    const xData = data.columns.filter((col) => data.types[col[0]] === "x")[0];
+
+    yAxis(ctx, yMin, yMax);
+    xAxis(ctx, xData, xRatio);
+
+    yData.map(toCoords(xRatio, yRatio)).forEach((coords, i) => {
+      const color = data.colors[yData[i][0]];
+      line(ctx, coords, { color: color });
+    });
+  }
+
+  function clear() {
+    ctx.clearRect(0, 0, DPI_WIDTH, DPI_HEIGHT);
+  }
+
+  return {
+    init() {
+      paint();
+    },
+    destroy() {
+      cancelAnimationFrame(raf);
+      canvas.removeEventListener("mousemove", mousemove);
+    },
+  };
 }
 
 function toCoords(xRatio, yRatio) {
@@ -40,15 +84,12 @@ function toCoords(xRatio, yRatio) {
       .filter((_, i) => i !== 0);
 }
 
-chart(document.getElementById("chart"), getChartData());
-
 function yAxis(ctx, yMin, yMax) {
   const step = VIEW_HEIGHT / ROWS_COUNT;
-  //console.log("step: " + step);
   const stepText = (yMax - yMin) / ROWS_COUNT;
-  //console.log("stepText: " + stepText);
 
   ctx.beginPath();
+  ctx.lineWidth = 1;
   ctx.strokeStyle = "#bbbbbb";
   ctx.font = "bold 20px Hevletica, sans-serif";
   ctx.fillStyle = "#96a2aa";
