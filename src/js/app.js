@@ -6,6 +6,7 @@ const DPI_HEIGHT = HEIGHT * 2;
 const VIEW_WIDTH = DPI_WIDTH;
 const VIEW_HEIGHT = DPI_HEIGHT - PADDING * 2;
 const ROWS_COUNT = 5;
+const CIRCLE_RADIUS = 8;
 
 const tgChart = chart(document.getElementById("chart"), getChartData());
 tgChart.init();
@@ -74,6 +75,13 @@ function chart(canvas, data) {
     yData.map(toCoords(xRatio, yRatio)).forEach((coords, i) => {
       const color = data.colors[yData[i][0]];
       line(ctx, coords, { color: color });
+
+      for (const [x, y] of coords) {
+        if (isOver(proxy.mouse, x, coords.length)) {
+          circle(ctx, x, y, color);
+          break;
+        }
+      }
     });
   }
 
@@ -183,6 +191,16 @@ function line(ctx, coords, { color }) {
   for (const [x, y] of coords) {
     ctx.lineTo(x, y);
   }
+  ctx.stroke();
+  ctx.closePath();
+}
+
+function circle(ctx, x, y, color) {
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = "#ffffffaa";
+  ctx.arc(x, y, CIRCLE_RADIUS, 0, 2 * Math.PI);
+  ctx.fill();
   ctx.stroke();
   ctx.closePath();
 }
