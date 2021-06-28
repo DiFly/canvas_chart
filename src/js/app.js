@@ -32,17 +32,31 @@ function chart(canvas, data) {
   );
 
   function mousemove({ clientX, clientY }) {
-    const { left } = canvas.getBoundingClientRect();
+    const { left, right } = canvas.getBoundingClientRect();
 
-    console.log("mouse clientX, clientY", clientX, clientY, " left: " + left);
+    console.log(
+      "mouse clientX, clientY",
+      clientX,
+      clientY,
+      " left, right: " + left,
+      right
+    );
 
     proxy.mouse = {
       x: clientX - left,
       y: clientY,
+      canvasWidth: right - left,
+      pxXRatio: DPI_WIDTH / (right - left),
     };
   }
 
+  function mouseleave() {
+    console.log("mouseleave");
+    proxy.mouse = null;
+  }
+
   canvas.addEventListener("mousemove", mousemove);
+  canvas.addEventListener("mouseleave", mouseleave);
 
   function paint() {
     clear();
@@ -74,6 +88,7 @@ function chart(canvas, data) {
     destroy() {
       cancelAnimationFrame(raf);
       canvas.removeEventListener("mousemove", mousemove);
+      canvas.removeEventListener("mouseleave", mouseleave);
     },
   };
 }
@@ -564,6 +579,7 @@ function isOver(mouse, x, length) {
   if (!mouse) {
     return false;
   }
+  const pxXRatio = DPI_WIDTH / mouse.canvasWidth;
   const width = DPI_WIDTH / length;
-  return Math.abs(x - mouse.x) < width / 2;
+  return Math.abs(x - mouse.x * pxXRatio) < width / 2;
 }
