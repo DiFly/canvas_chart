@@ -8,14 +8,19 @@ const VIEW_HEIGHT = DPI_HEIGHT - PADDING * 2;
 const ROWS_COUNT = 5;
 const CIRCLE_RADIUS = 8;
 
-const tgChart = chart(document.getElementById("chart"), getChartData());
+const tgChart = chart(
+  document.getElementById("chart_container"),
+  getChartData()
+);
 tgChart.init();
 // tgChart.destroy();
 
-function chart(canvas, data) {
+function chart(root, data) {
+  const canvas = root.querySelector("canvas");
   console.log("data", data);
   let raf;
   const ctx = canvas.getContext("2d");
+  const tip = tooltip(root.querySelector('[data-el="tooltip"]'));
   canvas.width = DPI_WIDTH;
   canvas.height = DPI_HEIGHT;
 
@@ -224,6 +229,54 @@ function computeBoundaries({ columns, types }) {
   });
 
   return [min, max];
+}
+
+function isOver(mouse, x, length) {
+  if (!mouse) {
+    return false;
+  }
+  const pxXRatio = DPI_WIDTH / mouse.canvasWidth;
+  const width = DPI_WIDTH / length;
+  return Math.abs(x - mouse.x * pxXRatio) < width / 2;
+}
+
+const tooltipTemplate = () => `
+  <div class="tooltip-title">${data.title}</div>
+  <ul class="tooltip-list">
+    ${data.items
+      .map((item) => {
+        return `<li class="tooltip-list-item">
+          <div class="value" style="color: ${item.color}">${item.value}</div>
+          <div class="name" style="color: ${item.color}">${item.name}</div>
+      </li>`;
+      })
+      .join("\n")}
+  </ul>
+`;
+
+function tooltip(el) {
+  const clear = () => (el.innerHTML = "");
+
+  return {
+    show({ left, top }, data) {
+      const { height, width } = el.getBoundingClientRect();
+
+      clear();
+      css(el, {
+        display: "block",
+        top: top - height + "px",
+        left: (left + width) / 2 + "px",
+      });
+      el.insertAdjacentHTML("afterbegin", tooltipTemplate(data));
+    },
+    hide() {
+      css(el, { display: "none" });
+    },
+  };
+}
+
+function css(el, styles = {}) {
+  Object.assign(el.style, styles);
 }
 
 function getChartData() {
@@ -591,13 +644,4 @@ function getChartData() {
       },
     },
   ][0];
-}
-
-function isOver(mouse, x, length) {
-  if (!mouse) {
-    return false;
-  }
-  const pxXRatio = DPI_WIDTH / mouse.canvasWidth;
-  const width = DPI_WIDTH / length;
-  return Math.abs(x - mouse.x * pxXRatio) < width / 2;
 }

@@ -30,6 +30,9 @@ body > main {
   background-color: antiquewhite;
 }
 
+.chart-tooltip {
+}
+
 .canvas_body {
   margin: 0 auto 0 auto;
   max-width: 100%;
