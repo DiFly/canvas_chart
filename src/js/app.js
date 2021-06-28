@@ -32,8 +32,12 @@ function chart(canvas, data) {
   );
 
   function mousemove({ clientX, clientY }) {
+    const { left } = canvas.getBoundingClientRect();
+
+    console.log("mouse clientX, clientY", clientX, clientY, " left: " + left);
+
     proxy.mouse = {
-      x: clientX,
+      x: clientX - left,
       y: clientY,
     };
   }
@@ -51,7 +55,7 @@ function chart(canvas, data) {
     const xData = data.columns.filter((col) => data.types[col[0]] === "x")[0];
 
     yAxis(ctx, yMin, yMax);
-    xAxis(ctx, xData, xRatio);
+    xAxis(ctx, xData, xRatio, proxy);
 
     yData.map(toCoords(xRatio, yRatio)).forEach((coords, i) => {
       const color = data.colors[yData[i][0]];
@@ -104,15 +108,25 @@ function yAxis(ctx, yMin, yMax) {
   ctx.closePath();
 }
 
-function xAxis(ctx, data, xRatio) {
+function xAxis(ctx, data, xRatio, { mouse }) {
   const colCount = 8;
   const step = Math.round(data.length / colCount);
 
   ctx.beginPath();
-  for (let i = 1; i < data.length; i += step) {
-    const text = toDate(data[i]);
+  for (let i = 1; i < data.length; i++) {
     const x = i * xRatio;
-    ctx.fillText(text, x, DPI_HEIGHT - 10);
+    if ((i - 1) % step === 0) {
+      const text = toDate(data[i]);
+      ctx.fillText(text, x, DPI_HEIGHT - 10);
+    }
+
+    if (isOver(mouse, x, data.length - 1)) {
+      console.log("over");
+      ctx.save();
+      ctx.moveTo(x, PADDING);
+      ctx.lineTo(x, DPI_HEIGHT - PADDING);
+      ctx.restore();
+    }
   }
   ctx.stroke();
   ctx.closePath();
@@ -544,4 +558,12 @@ function getChartData() {
       },
     },
   ][0];
+}
+
+function isOver(mouse, x, length) {
+  if (!mouse) {
+    return false;
+  }
+  const width = DPI_WIDTH / length;
+  return Math.abs(x - mouse.x) < width / 2;
 }
