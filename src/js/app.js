@@ -64,6 +64,7 @@ function chart(root, data) {
   function mouseleave() {
     console.log("mouseleave");
     proxy.mouse = null;
+    tip.hide();
   }
 
   canvas.addEventListener("mousemove", mousemove);
@@ -196,9 +197,8 @@ function toDate(timestamp, withDay) {
   const date = new Date(timestamp);
 
   if (withDay) {
-    return `${shortDays[date.getDay()]}, ${
-      shortMonths[date.getMonth()]
-    } ${date.getDate()}`;
+    return `${shortDays[date.getDay()]}, ${shortMonths[date.getMonth()]
+      } ${date.getDate()}`;
   }
 
   return `${shortMonths[date.getMonth()]} ${date.getDate()}`;
@@ -259,13 +259,13 @@ const tooltipTemplate = (data) => `
   <div class="tooltip-title">${data.title}</div>
   <ul class="tooltip-list">
     ${data.items
-      .map((item) => {
-        return `<li class="tooltip-list-item">
+    .map((item) => {
+      return `<li class="tooltip-list-item">
           <div class="value" style="color: ${item.color}">${item.value}</div>
           <div class="name" style="color: ${item.color}">${item.name}</div>
       </li>`;
-      })
-      .join("\n")}
+    })
+    .join("\n")}
   </ul>
 `;
 
