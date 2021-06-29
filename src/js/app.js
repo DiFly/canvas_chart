@@ -29,7 +29,6 @@ function chart(root, data) {
     {
       set(...args) {
         const result = Reflect.set(...args);
-        //console.log("change");
 
         raf = requestAnimationFrame(paint);
         return result;
@@ -39,14 +38,6 @@ function chart(root, data) {
 
   function mousemove({ clientX, clientY }) {
     const { left, right, top } = canvas.getBoundingClientRect();
-
-    console.log(
-      "mouse clientX, clientY",
-      clientX,
-      clientY,
-      " left, right: " + left,
-      right
-    );
 
     proxy.mouse = {
       x: clientX - left,
@@ -62,7 +53,6 @@ function chart(root, data) {
   }
 
   function mouseleave() {
-    console.log("mouseleave");
     proxy.mouse = null;
     tip.hide();
   }
@@ -155,7 +145,6 @@ function xAxis(ctx, xData, yData, xRatio, { mouse }, tip, data) {
     }
 
     if (isOver(mouse, x, xData.length - 1)) {
-      //console.log("over");
       ctx.save();
       ctx.moveTo(x, PADDING);
       ctx.lineTo(x, DPI_HEIGHT - PADDING);
