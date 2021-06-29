@@ -38,7 +38,7 @@ function chart(root, data) {
   );
 
   function mousemove({ clientX, clientY }) {
-    const { left, right } = canvas.getBoundingClientRect();
+    const { left, right, top } = canvas.getBoundingClientRect();
 
     console.log(
       "mouse clientX, clientY",
@@ -53,6 +53,11 @@ function chart(root, data) {
       y: clientY,
       canvasWidth: right - left,
       pxXRatio: DPI_WIDTH / (right - left),
+      tooltip: {
+        canvasWidth: right - left,
+        left: clientX - left,
+        top: clientY - top,
+      },
     };
   }
 
@@ -75,7 +80,7 @@ function chart(root, data) {
     const xData = data.columns.filter((col) => data.types[col[0]] === "x")[0];
 
     yAxis(ctx, yMin, yMax);
-    xAxis(ctx, xData, xRatio, proxy);
+    xAxis(ctx, xData, xRatio, proxy, tip);
 
     yData.map(toCoords(xRatio, yRatio)).forEach((coords, i) => {
       const color = data.colors[yData[i][0]];
@@ -136,7 +141,7 @@ function yAxis(ctx, yMin, yMax) {
   ctx.closePath();
 }
 
-function xAxis(ctx, data, xRatio, { mouse }) {
+function xAxis(ctx, data, xRatio, { mouse }, tip) {
   const colCount = 8;
   const step = Math.round(data.length / colCount);
 
@@ -154,6 +159,11 @@ function xAxis(ctx, data, xRatio, { mouse }) {
       ctx.moveTo(x, PADDING);
       ctx.lineTo(x, DPI_HEIGHT - PADDING);
       ctx.restore();
+
+      tip.show(mouse.tooltip, {
+        title: toDate(data[i]),
+        items: [],
+      });
     }
   }
   ctx.stroke();
@@ -240,7 +250,7 @@ function isOver(mouse, x, length) {
   return Math.abs(x - mouse.x * pxXRatio) < width / 2;
 }
 
-const tooltipTemplate = () => `
+const tooltipTemplate = (data) => `
   <div class="tooltip-title">${data.title}</div>
   <ul class="tooltip-list">
     ${data.items
@@ -258,14 +268,17 @@ function tooltip(el) {
   const clear = () => (el.innerHTML = "");
 
   return {
-    show({ left, top }, data) {
+    show({ canvasWidth, left, top }, data) {
       const { height, width } = el.getBoundingClientRect();
 
       clear();
       css(el, {
         display: "block",
         top: top - height + "px",
-        left: (left + width) / 2 + "px",
+        left:
+          left + width + width / 2 < canvasWidth
+            ? left + width / 2 + "px"
+            : left - width - width / 2 + "px",
       });
       el.insertAdjacentHTML("afterbegin", tooltipTemplate(data));
     },
