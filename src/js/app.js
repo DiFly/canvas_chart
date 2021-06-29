@@ -29,7 +29,7 @@ function chart(root, data) {
     {
       set(...args) {
         const result = Reflect.set(...args);
-        console.log("change");
+        //console.log("change");
 
         raf = requestAnimationFrame(paint);
         return result;
@@ -80,7 +80,7 @@ function chart(root, data) {
     const xData = data.columns.filter((col) => data.types[col[0]] === "x")[0];
 
     yAxis(ctx, yMin, yMax);
-    xAxis(ctx, xData, xRatio, proxy, tip);
+    xAxis(ctx, xData, yData, xRatio, proxy, tip, data);
 
     yData.map(toCoords(xRatio, yRatio)).forEach((coords, i) => {
       const color = data.colors[yData[i][0]];
@@ -141,28 +141,33 @@ function yAxis(ctx, yMin, yMax) {
   ctx.closePath();
 }
 
-function xAxis(ctx, data, xRatio, { mouse }, tip) {
+function xAxis(ctx, xData, yData, xRatio, { mouse }, tip, data) {
   const colCount = 8;
-  const step = Math.round(data.length / colCount);
+  const step = Math.round(xData.length / colCount);
 
   ctx.beginPath();
-  for (let i = 1; i < data.length; i++) {
+  for (let i = 1; i < xData.length; i++) {
     const x = i * xRatio;
     if ((i - 1) % step === 0) {
-      const text = toDate(data[i]);
+      const text = toDate(xData[i]);
       ctx.fillText(text, x, DPI_HEIGHT - 10);
     }
 
-    if (isOver(mouse, x, data.length - 1)) {
-      console.log("over");
+    if (isOver(mouse, x, xData.length - 1)) {
+      //console.log("over");
       ctx.save();
       ctx.moveTo(x, PADDING);
       ctx.lineTo(x, DPI_HEIGHT - PADDING);
       ctx.restore();
 
       tip.show(mouse.tooltip, {
-        title: toDate(data[i]),
-        items: [],
+        title: toDate(xData[i]),
+        // items: [],
+        items: yData.map((col) => ({
+          color: data.colors[col[0]],
+          name: data.names[col[0]],
+          value: col[i + 1],
+        })),
       });
     }
   }
